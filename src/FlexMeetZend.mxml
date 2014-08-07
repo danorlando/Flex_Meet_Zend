@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="init()"> 
+ 
+     <mx:Script> 
+        <![CDATA[
+        	import com.danorlando.valueObjects.UserVO;
+        	import mx.rpc.events.ResultEvent;
+        	import com.danorlando.events.UIEvent;
+        	import com.danorlando.controllers.UIController; 
+           	import mx.controls.Alert;
+           	import mx.rpc.events.FaultEvent;
+           	
+           	// accessor for the user interface controller class
+			private var _uiController:UIController;
+           
+           // initialized on the creationComplete event set on the application
+           // adds the necessary event listeners
+			private function init():void {
+				_uiController = UIController.getInstance();
+				_uiController.dispatcher.addEventListener(UIEvent.CREDENTIALS_VALIDATED, _uiController.getUserDetails);
+				_uiController.dispatcher.addEventListener(UIEvent.INVALID_CREDENTIALS, handleInvalidCredentials);
+				_uiController.dispatcher.addEventListener(UIEvent.USER_PROFILE, populateProfile)
+				this.submit_button.addEventListener(MouseEvent.CLICK, submitCredentials);
+			}
+			
+			// called when submit button is clicked from login form; sends the login info to the ui controller
+			private function submitCredentials(event:MouseEvent):void {
+				var user:String = username.text;
+				var pass:String = password.text;
+				_uiController.submitCredentials(user,pass)
+			}
+			
+			// event handler for UIEvent.INVALID_CREDENTIALS
+			private function handleInvalidCredentials(event:UIEvent):void {
+				Alert.show("Invalid Credentials. Please try again.", "AUTHENTICATION FAILED");
+				// if invalid credentials are submitted while the details container is displayed, then hide it
+				if (detailsContainer.visible) { detailsContainer.visible = false }
+			}
+			
+			// event handler for UIEvent.USER_PROFILE; 
+			// binds the data from the ui controller's UserVO object to the respective text fields/labels
+			private function populateProfile(event:UIEvent):void {
+				full_name.text = _uiController.user.full_name;
+				address.text = _uiController.user.user_address;
+				city.text = _uiController.user.user_city;
+				state.text = _uiController.user.user_state;
+				zip.text = _uiController.user.user_zip;
+				phone.text = _uiController.user.user_phone;
+				email.text = _uiController.user.user_email;
+				user_id.text = _uiController.currentUserId;
+				detailsContainer.visible = true;
+			}
+           
+        ]]> 
+    </mx:Script> 
+     <mx:Panel x="126" y="49" width="306" height="195" layout="absolute" title="LOGIN">
+          <mx:Form x="6.5" y="27">
+               <mx:FormItem label="Username:">
+                    <mx:TextInput id="username"/>
+               </mx:FormItem>
+               <mx:FormItem label="Password:">
+                    <mx:TextInput id="password" displayAsPassword="true"/>
+               </mx:FormItem>
+          </mx:Form>
+          <mx:Label x="22" y="120" id="login_message"/>
+          <mx:Button x="200" y="117" label="SUBMIT" id="submit_button" />
+     </mx:Panel>
+     <mx:Canvas id="detailsContainer" x="126" y="278" width="306" height="262" backgroundColor="#C3C3C3" cornerRadius="10" dropShadowEnabled="true" borderThickness="2" borderStyle="solid" borderColor="#000000" visible="false">
+          <mx:Label x="10" y="10" text="DETAILS FOR USER:" fontWeight="bold"/>
+          <mx:Label y="61" id="full_name" horizontalCenter="0"/>
+          <mx:Label y="80" id="address" horizontalCenter="0"/>
+          <mx:HBox y="99" horizontalCenter="0" horizontalGap="2">
+               <mx:Label id="city"/>
+               <mx:Text text=","/>
+               <mx:Label id="state"/>
+               <mx:Label id="zip"/>
+          </mx:HBox>
+          <mx:Label y="152" id="email" horizontalCenter="0"/>
+          <mx:Label y="170" id="phone" horizontalCenter="0"/>
+          <mx:Label x="128" y="10" id="user_id"/>
+     </mx:Canvas>
+  
+</mx:Application> 
